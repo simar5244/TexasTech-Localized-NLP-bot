@@ -77,7 +77,7 @@
                 .then(response => response.json())
                 .then(scrapedData => {
                     const content = getScrapedContent(category, scrapedData);
-                    const api_key = "YOUR_API_KEY_HERE";  // Replace with your actual API key
+                    const api_key = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
 
                     const requestData = {
