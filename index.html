@@ -11,54 +11,67 @@
 
         document.getElementById("response").innerHTML = "Loading...";
 
-        // Fetch the pre-scraped content for the selected category
-        const content = getScrapedContent(category);
+        // Fetch the pre-scraped content from the GitHub-hosted JSON file
+        fetch("https://raw.githubusercontent.com/your-username/your-repository-name/main/scraped_data.json")
+            .then(response => response.json())
+            .then(scrapedData => {
+                const content = getScrapedContent(category, scrapedData);
 
-        // Call the API (Gemini API for instance)
-        const api_key = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI";  // Replace with your actual API key
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
+                // Call the Gemini API
+                const api_key = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI";  // Replace with your actual API key
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
 
-        const requestData = {
-            "contents": [{
-                "parts": [{
-                    "text": `Learn all the information on this webpage:\n\n${content}\n\nyou are a human marketer/sales person trying to sell someone stuff. try to avoid hard 'No' and be extremely polite and throughtful.Now answer this question: ${question}`
-                }]
-            }]
-        };
+                const requestData = {
+                    "contents": [{
+                        "parts": [{
+                            "text": `Learn all the information on this webpage:\n\n${content}\n\nnyou are a human marketer/sales person trying to sell someone stuff. try to avoid hard 'No' and be extremely polite and throughtful.Now answer this question: ${question}`
+                        }]
+                    }]
+                };
 
-        fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Extract the answer from the response object
-            const answer = data.candidates && data.candidates[0] && data.candidates[0].content;
-
-            // Check if the answer exists
-            if (answer) {
-                document.getElementById("response").innerHTML = `<strong>Answer:</strong> ${answer}`;
-            } else {
-                document.getElementById("response").innerHTML = "Sorry, I couldn't find an answer. Would you like to try another category or contact a live person?";
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById("response").innerHTML = "An error occurred while fetching the answer. Please try again later.";
-        });
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const answer = data.candidates && data.candidates[0] && data.candidates[0].content;
+                    if (answer) {
+                        document.getElementById("response").innerHTML = `<strong>Answer:</strong> ${answer}`;
+                    } else {
+                        document.getElementById("response").innerHTML = "Sorry, I couldn't find an answer. Please try another category or contact a live person.";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById("response").innerHTML = "An error occurred while fetching the answer. Please try again later.";
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching scraped data:', error);
+                document.getElementById("response").innerHTML = "Failed to load scraped data. Please try again later.";
+            });
     }
 
-    // Simulate pre-scraped content for categories (this would be replaced with actual content from your scraping)
-    function getScrapedContent(category) {
-        const scrapedData = {
-            "About": "This is the About section of TTU K-12.",
-            "Programs": "This is the Programs section of TTU K-12.",
-            "Admissions": "This is the Admissions section of TTU K-12.",
-            "Student Resources": "This is the Student Resources section of TTU K-12."
+    // Function to get the scraped content for the selected category
+    function getScrapedContent(category, scrapedData) {
+        const categoryLinks = {
+            "About": ["https://www.depts.ttu.edu/k12/about/", "https://www.depts.ttu.edu/k12/about/staff/"],
+            "Programs": ["https://www.depts.ttu.edu/k12/fulltime/", "https://www.depts.ttu.edu/k12/freetuition/"],
+            "Admissions": ["https://www.depts.ttu.edu/k12/enroll/"],
+            "Student Resources": ["https://www.depts.ttu.edu/k12/support/handbook.php"]
         };
-        return scrapedData[category] || "";
+
+        const categoryUrls = categoryLinks[category] || [];
+        let content = "";
+        categoryUrls.forEach(url => {
+            if (scrapedData[url]) {
+                content += scrapedData[url] + "\n\n";
+            }
+        });
+        return content;
     }
 </script>
