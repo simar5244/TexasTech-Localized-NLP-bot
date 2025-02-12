@@ -1,133 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTU K-12 Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
+<script>
+    // Handle the button click and submit the question
+    function submitQuestion() {
+        const question = document.getElementById('question').value;
+        const category = document.getElementById('category').value;
+
+        if (question.trim() === "") {
+            alert("Please enter a question.");
+            return;
         }
 
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-        }
+        document.getElementById("response").innerHTML = "Loading...";
 
-        .container {
-            margin-top: 20px;
-        }
+        // Fetch the pre-scraped content for the selected category
+        const content = getScrapedContent(category);
 
-        select, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-        }
+        // Call the API (Gemini API for instance)
+        const api_key = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI";  // Replace with your actual API key
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
 
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            width: 100%;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .output {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>Welcome to TTU K-12 Chatbot</h1>
-    <p>How can I assist you today? Please select a category and ask a question.</p>
-
-    <div class="container">
-        <select id="category">
-            <option value="About">About</option>
-            <option value="Programs">Programs</option>
-            <option value="Admissions">Admissions</option>
-            <option value="Student Resources">Student Resources</option>
-        </select>
-
-        <input type="text" id="question" placeholder="Ask your question..." />
-        <button onclick="submitQuestion()">Submit Question</button>
-        
-        <div id="response" class="output"></div>
-    </div>
-
-    <script>
-        // Handle the button click and submit the question
-        function submitQuestion() {
-            const question = document.getElementById('question').value;
-            const category = document.getElementById('category').value;
-
-            if (question.trim() === "") {
-                alert("Please enter a question.");
-                return;
-            }
-
-            document.getElementById("response").innerHTML = "Loading...";
-
-            // Fetch the pre-scraped content for the selected category
-            const content = getScrapedContent(category);
-
-            // Call the API (Gemini API for instance)
-            const api_key = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI";  // Replace with your actual API key
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
-
-            const requestData = {
-                "contents": [{
-                    "parts": [{
-                        "text": `Learn all the information on this webpage:\n\n${content}\n\nyou are a human marketing/sales person trying to sell. avoid hard 'No' and be extremely polite and throughtful.Now answer this question:: ${question}`
-                    }]
+        const requestData = {
+            "contents": [{
+                "parts": [{
+                    "text": `Learn all the information on this webpage:\n\n${content}\n\nyou are a human marketer/sales person trying to sell someone stuff. try to avoid hard 'No' and be extremely polite and throughtful.Now answer this question: ${question}`
                 }]
-            };
+            }]
+        };
 
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                const answer = data.candidates[0]?.content || "I couldn't find an answer. Please try another category or contact a live person.";
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Extract the answer from the response object
+            const answer = data.candidates && data.candidates[0] && data.candidates[0].content;
+
+            // Check if the answer exists
+            if (answer) {
                 document.getElementById("response").innerHTML = `<strong>Answer:</strong> ${answer}`;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById("response").innerHTML = "An error occurred while fetching the answer. Please try again later.";
-            });
-        }
+            } else {
+                document.getElementById("response").innerHTML = "Sorry, I couldn't find an answer. Would you like to try another category or contact a live person?";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById("response").innerHTML = "An error occurred while fetching the answer. Please try again later.";
+        });
+    }
 
-        // Simulate pre-scraped content for categories (this would be replaced with actual content from your scraping)
-        function getScrapedContent(category) {
-            const scrapedData = {
-                "About": "This is the About section of TTU K-12.",
-                "Programs": "This is the Programs section of TTU K-12.",
-                "Admissions": "This is the Admissions section of TTU K-12.",
-                "Student Resources": "This is the Student Resources section of TTU K-12."
-            };
-            return scrapedData[category] || "";
-        }
-    </script>
-
-</body>
-</html>
+    // Simulate pre-scraped content for categories (this would be replaced with actual content from your scraping)
+    function getScrapedContent(category) {
+        const scrapedData = {
+            "About": "This is the About section of TTU K-12.",
+            "Programs": "This is the Programs section of TTU K-12.",
+            "Admissions": "This is the Admissions section of TTU K-12.",
+            "Student Resources": "This is the Student Resources section of TTU K-12."
+        };
+        return scrapedData[category] || "";
+    }
+</script>
