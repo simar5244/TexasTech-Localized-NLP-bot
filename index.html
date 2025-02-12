@@ -12,7 +12,7 @@
         document.getElementById("response").innerHTML = "Loading...";
 
         // Fetch the pre-scraped content from the GitHub-hosted JSON file
-        fetch("https://raw.githubusercontent.com/your-username/your-repository-name/main/scraped_data.json")
+        fetch("https://raw.githubusercontent.com/simar5244/TexasTech-Localized-NLP-bot/main/scraped_data.json")
             .then(response => response.json())
             .then(scrapedData => {
                 const content = getScrapedContent(category, scrapedData);
