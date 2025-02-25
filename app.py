@@ -1,35 +1,24 @@
+import os
 from flask import Flask, request, jsonify
-import requests
-import json
+from gemini_api import ask_question
+from data_loader import load_scraped_data
 
 app = Flask(__name__)
 
-# Load scraped content
-with open("scraped_content.json", "r") as file:
-    scraped_data = json.load(file)
-
-API_KEY = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI"
-
-def ask_gemini(category, question):
-    """Sends question to Google Gemini API"""
-    content = scraped_data.get(category, "")
-    api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
-    headers = {'Content-Type': 'application/json'}
-    data = {"contents": [{"parts": [{"text": f"Context:\n{content}\n\nQuestion: {question}"}]}]}
-
-    response = requests.post(api_url, headers=headers, data=json.dumps(data))
-    
-    if response.status_code == 200:
-        return response.json().get("candidates", [{}])[0].get("content", "No response.")
-    return "Error connecting to Gemini API"
+scraped_data = load_scraped_data()
 
 @app.route("/ask", methods=["POST"])
-def ask():
+def handle_question():
     data = request.json
-    category = data.get("category", "")
-    question = data.get("question", "")
-    answer = ask_gemini(category, question)
+    category = data.get("category", "").strip()
+    question = data.get("question", "").strip()
+
+    if not category or not question:
+        return jsonify({"error": "Missing category or question"}), 400
+
+    answer = ask_question(category, question, scraped_data)
     return jsonify({"answer": answer})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))  # Use Render's default port
+    app.run(host="0.0.0.0", port=port)
