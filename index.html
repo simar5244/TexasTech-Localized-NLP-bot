@@ -4,129 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TTU K-12 Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-            padding: 20px;
-            max-width: 600px;
-            margin: auto;
-        }
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-        }
-        .container {
-            margin-top: 20px;
-        }
-        select, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            width: 100%;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .output {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-        }
-    </style>
 </head>
 <body>
-    <h1>Welcome to TTU K-12 Chatbot</h1>
-    <p>How can I assist you today? Please select a category and ask a question.</p>
-    <div class="container">
-        <select id="category">
-            <option value="About">About</option>
-            <option value="Programs">Programs</option>
-            <option value="Admissions">Admissions</option>
-            <option value="Student Resources">Student Resources</option>
-        </select>
-        <input type="text" id="question" placeholder="Ask your question..." />
-        <button onclick="submitQuestion()">Submit Question</button>
-        <div id="response" class="output"></div>
-    </div>
+    <h2>TTU K-12 Chatbot</h2>
+    <label for="category">Choose Category:</label>
+    <select id="category">
+        <option value="About">About</option>
+        <option value="Programs">Programs</option>
+        <option value="Admissions">Admissions</option>
+        <option value="Student Resources">Student Resources</option>
+    </select>
     
+    <input type="text" id="question" placeholder="Ask a question...">
+    <button onclick="askQuestion()">Submit</button>
+    
+    <p><strong>Answer:</strong> <span id="answer"></span></p>
+
     <script>
-        function submitQuestion() {
-            const question = document.getElementById('question').value;
-            const category = document.getElementById('category').value;
-
-            if (question.trim() === "") {
-                alert("Please enter a question.");
-                return;
-            }
-
-            document.getElementById("response").innerHTML = "Loading...";
-
-            fetch("https://raw.githubusercontent.com/simar5244/TexasTech-Localized-NLP-bot/main/scraped_data.json")
-                .then(response => response.json())
-                .then(scrapedData => {
-                    const content = getScrapedContent(category, scrapedData);
-                    const api_key = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI"; 
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`;
-
-                    const requestData = {
-                        "contents": [{
-                            "parts": [{
-                                "text": `Learn all the information on this webpage:\n\n${content}\n\nYou are a human marketer/salesperson trying to sell someone stuff. Try to avoid hard 'No' and be extremely polite and thoughtful. Now answer this question: ${question}`
-                            }]
-                        }]
-                    };
-
-                    fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        const answer = data.candidates && data.candidates[0] && data.candidates[0].content;
-                        document.getElementById("response").innerHTML = answer ? `<strong>Answer:</strong> ${answer}` : "Sorry, I couldn't find an answer. Please try another category or contact a live person.";
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        document.getElementById("response").innerHTML = "An error occurred while fetching the answer. Please try again later.";
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching scraped data:', error);
-                    document.getElementById("response").innerHTML = "Failed to load scraped data. Please try again later.";
-                });
-        }
-
-        function getScrapedContent(category, scrapedData) {
-            const categoryLinks = {
-                "About": ["https://www.depts.ttu.edu/k12/about/", "https://www.depts.ttu.edu/k12/about/staff/"],
-                "Programs": ["https://www.depts.ttu.edu/k12/fulltime/", "https://www.depts.ttu.edu/k12/freetuition/"],
-                "Admissions": ["https://www.depts.ttu.edu/k12/enroll/"],
-                "Student Resources": ["https://www.depts.ttu.edu/k12/support/handbook.php"]
-            };
-
-            const categoryUrls = categoryLinks[category] || [];
-            let content = "";
-            categoryUrls.forEach(url => {
-                if (scrapedData[url]) {
-                    content += scrapedData[url] + "\n\n";
-                }
+        async function askQuestion() {
+            const category = document.getElementById("category").value;
+            const question = document.getElementById("question").value;
+            const response = await fetch("https://texastech-localized-nlp-bot.onrender.com", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({category, question})
             });
-            return content;
+            const data = await response.json();
+            document.getElementById("answer").textContent = data.answer;
         }
     </script>
 </body>
