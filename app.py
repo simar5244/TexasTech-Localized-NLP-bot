@@ -45,17 +45,35 @@ def ask_gemini(category, question):
 def index():
     return render_template("index.html")
 
-@app.route("/ask", methods=["POST"])
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
+
+@app.route('/ask', methods=['POST'])
 def ask():
-    data = request.json
-    category = data.get("category")
-    question = data.get("question")
+    data = request.get_json()
+    if not data or 'question' not in data:
+        return jsonify({"error": "Invalid request"}), 400
 
-    if not category or not question:
-        return jsonify({"error": "Both category and question are required."}), 400
+    category = data.get("category", "General")
+    question = data["question"]
 
-    answer = ask_gemini(category, question)
-    return jsonify({"answer": answer})
+    # Simulated AI response structure (Modify this based on your actual model)
+    ai_response = {
+        "answer": {
+            "parts": [f"This is a response for '{question}' in category '{category}'."],
+            "role": "model"
+        }
+    }
+
+    # Extracting the actual answer text
+    extracted_answer = ai_response["answer"]["parts"][0]
+
+    return jsonify({"answer": extracted_answer})  # Return just the string
+
+
+
 
 # === Run Flask App ===
 if __name__ == "__main__":
