@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import json
 import requests
 import os
 
 app = Flask(__name__)
+CORS(app, origins=["https://simar5244.github.io"])  # Allow requests from GitHub Pages
 
 # === Configuration ===
 API_KEY = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI"  # Replace with your actual API key
@@ -56,8 +58,6 @@ def ask():
     answer = ask_gemini(category, question)
     return jsonify({"answer": answer})
 
-
-
+# === Run Flask App ===
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Use Render's default port
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True, host="0.0.0.0", port=10000)
