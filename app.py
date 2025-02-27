@@ -34,6 +34,7 @@ def ask_gemini(category, question):
 
     if response.status_code == 200:
         try:
+            # Extract the actual content from the response
             return response.json()["candidates"][0]["content"]
         except (KeyError, IndexError):
             return "Unexpected response format from Gemini API."
@@ -44,11 +45,6 @@ def ask_gemini(category, question):
 @app.route("/")
 def index():
     return render_template("index.html")
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-
-
 
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -64,12 +60,7 @@ def ask():
 
     return jsonify({"answer": answer})  # Return the actual response from Gemini
 
-
-
-
-
 # === Run Flask App ===
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Render sets PORT dynamically
     app.run(host="0.0.0.0", port=port, debug=True)
- 
