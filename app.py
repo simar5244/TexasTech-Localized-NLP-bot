@@ -1,14 +1,14 @@
 from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
+from flask_cors import CORS  # Import CORS for cross-origin requests
 import json
 import requests
 import os
 
 app = Flask(__name__)
-CORS(app, origins=["https://simar5244.github.io"])  # Allow requests from GitHub Pages
+CORS(app)  # Enable CORS for all routes
 
 # === Configuration ===
-API_KEY = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI"  # Replace with your actual API key
+API_KEY = "YOUR_GEMINI_API_KEY"  # Replace with your actual API key
 
 # === Load Scraped Data ===
 def load_scraped_data():
@@ -43,8 +43,7 @@ def ask_gemini(category, question):
 # === Flask Routes ===
 @app.route("/")
 def index():
-    categories = list(scraped_data.keys())  # Load categories from scraped data
-    return render_template("index.html", categories=categories)
+    return render_template("index.html")
 
 @app.route("/ask", methods=["POST"])
 def ask():
@@ -60,4 +59,6 @@ def ask():
 
 # === Run Flask App ===
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 5000))  # Render sets PORT dynamically
+    app.run(host="0.0.0.0", port=port, debug=True)
+ 
