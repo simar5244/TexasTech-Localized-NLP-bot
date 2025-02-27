@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # === Configuration ===
-API_KEY = "YOUR_GEMINI_API_KEY"  # Replace with your actual API key
+API_KEY = "AIzaSyCHcavN8CMNDIy_DNWbtZ69_XmIN37BMgI"  
 
 # === Load Scraped Data ===
 def load_scraped_data():
