@@ -59,26 +59,40 @@
     </div>
 
     <script>
-        async function askQuestion() {
-            const category = document.getElementById("category").value;
-            const question = document.getElementById("question").value;
-            const answerDiv = document.getElementById("answer");
-            answerDiv.textContent = "Thinking..."; // Show loading text
+        
+       async function askQuestion() {
+        const category = document.getElementById("category").value;
+        const question = document.getElementById("question").value;
+        const answerDiv = document.getElementById("answer");
+        answerDiv.textContent = "Thinking..."; // Show loading text
 
+        try {
             const response = await fetch("https://texastech-localized-nlp-bot.onrender.com", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({category, question})
             });
 
+            // Check if the response is OK
             if (!response.ok) {
-                answerDiv.textContent = "Error: Unable to fetch response.";
+                answerDiv.textContent = `Error: ${response.status} - Unable to fetch response.`;
                 return;
             }
 
             const data = await response.json();
-            answerDiv.textContent = data.answer || "No response received.";
+        
+        // Check if 'data' contains 'answer'
+            if (data && data.answer) {
+                answerDiv.textContent = data.answer;
+            } else {
+                answerDiv.textContent = "No response received.";
+            }
+        } catch (error) {
+            // Catch any network or other errors
+            answerDiv.textContent = `Error: ${error.message}`;
         }
+    }
+
     </script>
 
 </body>
