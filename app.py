@@ -59,18 +59,11 @@ def ask():
     category = data.get("category", "General")
     question = data["question"]
 
-    # Simulated AI response structure (Modify this based on your actual model)
-    ai_response = {
-        "answer": {
-            "parts": [f"This is a response for '{question}' in category '{category}'."],
-            "role": "model"
-        }
-    }
+    # Fetch real response from Gemini API
+    answer = ask_gemini(category, question)
 
-    # Extracting the actual answer text
-    extracted_answer = ai_response["answer"]["parts"][0]
+    return jsonify({"answer": answer})  # Return the actual response from Gemini
 
-    return jsonify({"answer": extracted_answer})  # Return just the string
 
 
 
